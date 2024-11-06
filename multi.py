@@ -92,10 +92,8 @@ class CodeAgent:
         resp = CodeResponse.model_validate_json(
             response.choices[0].message.tool_calls[0].function.arguments
         )
-        print("code agent response", resp)
 
-        js = response.choices[0].message.tool_calls[0].function.arguments
-        args = json.loads(js)
+        args = json.loads(resp)
         return CodeResponse(**args)
 
 
@@ -143,12 +141,11 @@ class MultiAgentSystem:
                 response = await self.code_agent.process(query)
                 return {
                     "type": "code",
-                    "router": route_response.model_dump(),  # Include router response
+                    "router": route_response.model_dump(),
                     "response": response.model_dump(),
                 }
             else:
                 response = await self.research_agent.process(query)
-                print("RESPNSE inside multi agent", response)
 
                 if response.needs_code_example:
                     code_response = await self.code_agent.process(
@@ -157,14 +154,14 @@ class MultiAgentSystem:
                     response.needs_code_example = False
                     return {
                         "type": "research",
-                        "router": route_response.model_dump(),  # Include router response
+                        "router": route_response.model_dump(),
                         "response": response.model_dump(),
                         "code_example": code_response.model_dump(),
                     }
 
                 return {
                     "type": "research",
-                    "router": route_response.model_dump(),  # Include router response
+                    "router": route_response.model_dump(),
                     "response": response.model_dump(),
                 }
 
